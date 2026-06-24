@@ -1,0 +1,6 @@
+pi-phone-desktop (4.0-1) unstable; urgency=medium
+
+  * Initial release. Bundles scrcpy v4.0 with Accessories launchers for
+    phone mirroring and Android Desktop Mode (Android 16+).
+
+ -- Zach <ztcsdtx@gmail.com>  Wed, 24 Jun 2026 14:00:00 +0000

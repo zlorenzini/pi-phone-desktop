@@ -1,0 +1,43 @@
+name: Build and release .deb
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU for arm64
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Build .deb inside a Debian trixie arm64 container
+        run: |
+          docker run --rm --platform linux/arm64 \
+            -v "$PWD:/build" -w /build \
+            debian:trixie bash -c "
+              set -e
+              apt-get update
+              apt-get install -y --no-install-recommends build-essential debhelper dpkg-dev devscripts equivs
+              apt-get build-dep -y .
+              dpkg-buildpackage -us -uc -b
+            "
+
+      - name: Run lintian
+        run: |
+          docker run --rm --platform linux/arm64 \
+            -v "$PWD/..:/out" -w /out \
+            debian:trixie bash -c "
+              apt-get update && apt-get install -y --no-install-recommends lintian
+              lintian /out/pi-phone-desktop_*_arm64.deb || true
+            "
+
+      - name: Upload .deb to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ../pi-phone-desktop_*_arm64.deb

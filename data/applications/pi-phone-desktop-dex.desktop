@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Phone Desktop Mode
+GenericName=Android Desktop Mode
+Comment=Open your Android phone's Desktop Mode in a window (Android 16+)
+Exec=/bin/sh -c "$SHELL -i -c 'scrcpy --new-display=1920x1080/284'"
+Icon=scrcpy
+Terminal=false
+Type=Application
+Categories=Utility;RemoteAccess;
+StartupNotify=false

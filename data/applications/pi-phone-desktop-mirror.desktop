@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Phone Mirror
+GenericName=Android Screen Mirroring
+Comment=Mirror and control your Android phone
+Exec=/bin/sh -c "$SHELL -i -c scrcpy"
+Icon=scrcpy
+Terminal=false
+Type=Application
+Categories=Utility;RemoteAccess;
+StartupNotify=false

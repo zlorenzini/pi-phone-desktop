@@ -1,0 +1,33 @@
+Source: pi-phone-desktop
+Section: misc
+Priority: optional
+Maintainer: Zach <ztcsdtx@gmail.com>
+Build-Depends: debhelper-compat (= 13),
+               meson,
+               ninja-build,
+               pkg-config,
+               wget,
+               libsdl3-dev,
+               libavcodec-dev,
+               libavformat-dev,
+               libavdevice-dev,
+               libavutil-dev,
+               libswresample-dev,
+               libusb-1.0-0-dev
+Standards-Version: 4.6.2
+Homepage: https://github.com/zach/pi-phone-desktop
+Rules-Requires-Root: no
+
+Package: pi-phone-desktop
+Architecture: arm64
+Depends: ${shlibs:Depends}, ${misc:Depends}, adb
+Description: Mirror and desktop-mode your Android phone on a Raspberry Pi
+ pi-phone-desktop bundles scrcpy (screen mirroring and control for Android
+ devices) together with ready-to-use Accessories launchers for plain phone
+ mirroring and for Android's native Desktop Mode (Android 16 and later),
+ so no manual build steps, SDL3 hunting, or Android SDK download are
+ required.
+ .
+ This package vendors and builds the upstream scrcpy project
+ (https://github.com/Genymobile/scrcpy), which is licensed under the
+ Apache License 2.0 by Genymobile and contributors.

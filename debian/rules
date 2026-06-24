@@ -1,0 +1,32 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE = 1
+
+SCRCPY_SERVER_VERSION := v4.0
+SCRCPY_SERVER_SHA256  := 84924bd564a1eb6089c872c7521f968058977f91f5ff02514a8c74aff3210f3a
+SCRCPY_SERVER_URL     := https://github.com/Genymobile/scrcpy/releases/download/$(SCRCPY_SERVER_VERSION)/scrcpy-server-$(SCRCPY_SERVER_VERSION)
+SCRCPY_SERVER_JAR     := $(CURDIR)/scrcpy-server-$(SCRCPY_SERVER_VERSION)
+
+%:
+	dh $@ --buildsystem=meson --sourcedirectory=vendor/scrcpy
+
+# scrcpy's own build wants to compile the Android-side server with the full
+# Android SDK/gradle toolchain. We sidestep that by fetching upstream's own
+# prebuilt server jar (checksum-pinned) and pointing meson at it instead.
+override_dh_auto_configure:
+	wget -q -O $(SCRCPY_SERVER_JAR) $(SCRCPY_SERVER_URL)
+	echo "$(SCRCPY_SERVER_SHA256)  $(SCRCPY_SERVER_JAR)" | sha256sum --check
+	dh_auto_configure --buildsystem=meson --sourcedirectory=vendor/scrcpy -- \
+		--prefix=/usr \
+		-Dprebuilt_server=$(SCRCPY_SERVER_JAR) \
+		-Dportable=false
+
+override_dh_auto_install:
+	dh_auto_install --buildsystem=meson --sourcedirectory=vendor/scrcpy
+	# Drop upstream's own generic launchers; we ship branded replacements below.
+	rm -f debian/pi-phone-desktop/usr/share/applications/scrcpy.desktop
+	rm -f debian/pi-phone-desktop/usr/share/applications/scrcpy-console.desktop
+	install -Dm644 data/applications/pi-phone-desktop-mirror.desktop \
+		debian/pi-phone-desktop/usr/share/applications/pi-phone-desktop-mirror.desktop
+	install -Dm644 data/applications/pi-phone-desktop-dex.desktop \
+		debian/pi-phone-desktop/usr/share/applications/pi-phone-desktop-dex.desktop

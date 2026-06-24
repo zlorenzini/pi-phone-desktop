@@ -1,0 +1,11 @@
+obj-*/
+debian/.debhelper/
+debian/pi-phone-desktop/
+debian/pi-phone-desktop.substvars
+debian/pi-phone-desktop.debhelper.log
+debian/files
+debian/debhelper-build-stamp
+scrcpy-server-v*
+*.deb
+*.buildinfo
+*.changes
