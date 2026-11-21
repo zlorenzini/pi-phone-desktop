@@ -1,5 +1,6 @@
 #include "demuxer.h"
 
+#include <string.h>
 #include <assert.h>
 #include <inttypes.h>
 #include <libavcodec/avcodec.h>
@@ -202,7 +203,35 @@ run_demuxer(void *data) {
         goto end;
     }
 
-    const AVCodec *codec = avcodec_find_decoder(codec_id);
+    // Prefer a plain software decoder. avcodec_find_decoder() can return a
+    // hardware wrapper that can't run here: on a Jetson, NVIDIA's FFmpeg
+    // build has no software H.264 decoder, only h264_cuvid (fails with
+    // CUDA_ERROR_INVALID_DEVICE) and h264_nvv4l2dec (works). So: a software
+    // decoder if there is one, else a hardware one other than cuvid, else
+    // whatever FFmpeg picks. (No trial open: closing nvv4l2dec before it has
+    // decoded anything hangs.)
+    const AVCodec *codec = NULL;
+    const AVCodec *hw = NULL;
+    void *codec_it = NULL;
+    const AVCodec *c;
+    while ((c = av_codec_iterate(&codec_it))) {
+        if (c->id != codec_id || !av_codec_is_decoder(c)) {
+            continue;
+        }
+        if (!c->wrapper_name && !(c->capabilities & AV_CODEC_CAP_HARDWARE)) {
+            codec = c;
+            break;
+        }
+        if (!hw && (!c->wrapper_name || strcmp(c->wrapper_name, "cuvid"))) {
+            hw = c;
+        }
+    }
+    if (!codec) {
+        codec = hw ? hw : avcodec_find_decoder(codec_id);
+    }
+    if (codec) {
+        LOGI("Demuxer '%s': decoder %s", demuxer->name, codec->name);
+    }
     if (!codec) {
         LOGE("Demuxer '%s': stream disabled due to missing decoder",
              demuxer->name);
